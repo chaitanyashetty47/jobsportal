@@ -1,0 +1,135 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id   String @id @default(cuid())
+  name String
+  password   String?
+  avatar     String?
+  isVerified Boolean @default(false)
+  role       Role    @default(USER)
+  jobs       Job[]
+  email         String    @unique
+  emailVerified DateTime?
+  skills     String[]
+  experience Experience[]
+  education  Education[]
+  resume     String?
+  companyId      String?        @unique
+  company        Company?       @relation(fields: [companyId], references: [id])
+  
+}
+
+model Company {
+  id           String  @id @default(cuid())
+  companyName  String
+  companyLogo  String?
+  companyEmail String
+  companyBio   String
+  user         User?
+  job           Job[]
+}
+
+model Job {
+  id                 String @id @default(cuid())
+  userId             String
+  title              String
+  description        String
+  companyId          String
+  company            Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  category           Category
+  skills             String[]
+  expired            Boolean         @default(false)
+  hasExpiryDate      Boolean         @default(false) @map("has_expiry_date")
+  expiryDate         DateTime?
+  hasSalaryRange     Boolean         @default(false) @map("has_salary_range")
+  minSalary          Int?
+  maxSalary          Int?
+  hasExperiencerange Boolean         @default(false) @map("has_experience_range")
+  minExperience      Int?
+  maxExperience      Int?
+  isVerifiedJob      Boolean         @default(false) @map("is_verified_job")
+  deleted            Boolean         @default(false)
+  deletedAt          DateTime?
+  postedAt           DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+  user               User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+}
+
+model Experience {
+  id                Int             @id @default(autoincrement())
+  companyName       String
+  designation       String
+  EmploymentType    EmployementType
+  address           String
+  workMode          WorkMode
+  currentWorkStatus Boolean
+  startDate         DateTime
+  endDate           DateTime?
+  description       String
+  userId            String
+  user              User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Education {
+  id                Int             @id @default(autoincrement())
+  instituteName     String
+  degree            DegreeType
+  fieldOfStudy      FieldOfStudyType
+  startDate         DateTime
+  endDate           DateTime?
+  userId            String
+  user              User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+enum Role {
+  ADMIN
+  USER
+  HR
+}
+
+enum Category {
+  DESIGN
+  DEVELOPMENT
+  TESTING
+  DEVOPS
+}
+
+enum WorkMode {
+  HYBRID
+  FULLTIME
+  PARTTIME
+}
+
+enum EmployementType {
+  OFFICE
+  HYBRID
+  REMOTE
+}
+
+enum DegreeType {
+  BTech
+  MTech
+  BCA
+  MCA
+}
+
+enum FieldOfStudyType {
+  AI
+  Machine_Learning
+  CS
+  Mechanical
+}
